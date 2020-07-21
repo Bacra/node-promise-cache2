@@ -6,13 +6,13 @@ interface Options {
     cacheKey?: () => any,
 }
 
-export = function genPromiseCache2(
+export = function genPromiseCache(
     handler: () => Promise<any> | any,
     { cache = new Map(), cacheKey }: Options = {}
 ): Function {
     const isCacheFunc = typeof cache === 'function';
 
-    return async function(...args): Promise<any> {
+    return async function PromiseCache(...args): Promise<any> {
         const key = cacheKey ? cacheKey.apply(this, args) : args[0];
         const realCache:CacheMap = isCacheFunc ? (cache as CacheMapFunc).call(this) : cache;
 
