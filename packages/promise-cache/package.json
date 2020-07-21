@@ -3,6 +3,13 @@
   "version": "0.0.0",
   "description": "promise cache",
   "main": "index",
+  "scripts": {
+    "test": "mocha test/test_*"
+  },
+  "devDependencies": {
+    "expect.js": "^0.3.1",
+    "mocha": "^8.0.1"
+  },
   "repository": {
     "type": "git",
     "url": "git@github.com:Bacra/promise-cache2.git"
