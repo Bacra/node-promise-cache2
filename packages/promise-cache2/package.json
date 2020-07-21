@@ -1,0 +1,21 @@
+{
+  "name": "promise-cache2",
+  "version": "0.0.0",
+  "description": "promise cache",
+  "main": "index",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:Bacra/promise-cache2.git"
+  },
+  "keywords": [
+    "i18n",
+    "translate",
+    "ast"
+  ],
+  "author": "Bacra Woo<bacra.woo@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Bacra/promise-cache2/issues"
+  },
+  "homepage": "https://github.com/Bacra/promise-cache2"
+}

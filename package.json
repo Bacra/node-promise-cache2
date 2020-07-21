@@ -1,0 +1,21 @@
+{
+  "name": "root",
+  "private": true,
+  "scripts": {
+    "lint": "eslint .",
+    "bootstrap": "lerna bootstrap --no-ci",
+    "ls": "lerna ls",
+    "pub": "lerna publish",
+    "build": "tsc && lerna run build --",
+    "test": "lerna run test --",
+    "test-ci": "lerna run test-ci --",
+    "test-cov": "lerna run test-cov --",
+    "test-build": "lerna run test-build --"
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-config-brcjs": "^1.2.0",
+    "lerna": "^3.20.2",
+    "typescript": "^3.9.7"
+  }
+}
