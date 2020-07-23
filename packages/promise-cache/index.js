@@ -4,12 +4,18 @@ module.exports = function genPromiseCache(handler, { cache = new Map(), cacheKey
     return async function PromiseCache(...args) {
         const key = cacheKey ? cacheKey.apply(this, args) : args[0];
         const realCache = isCacheFunc ? cache.call(this) : cache;
-        const promise = Promise.resolve(handler.apply(this, args));
-        realCache.set(key, promise);
-        return promise.catch(err => {
-            realCache.delete(key);
-            throw err;
-        });
+        let promise = realCache.get(key);
+        if (!promise) {
+            promise = Promise.resolve(handler.apply(this, args));
+            realCache.set(key, promise);
+            return promise.catch(err => {
+                realCache.delete(key);
+                throw err;
+            });
+        }
+        else {
+            return promise;
+        }
     };
 };
 //# sourceMappingURL=index.js.map
