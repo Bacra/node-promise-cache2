@@ -37,4 +37,16 @@ describe('#base', () => {
 		expect(await obj.handler('123')).to.be('res');
 		expect(obj.cache.get('123')).to.an(Promise);
 	});
+
+	it('#runtimes', async() => {
+		let runTimes = 0;
+		const handler = promiseCache(() => {
+			return ++runTimes;
+		});
+
+		expect(await handler('123')).to.be(1);
+		expect(await handler('123')).to.be(1);
+		expect(await handler('1234')).to.be(2);
+		expect(await handler('1234')).to.be(2);
+	});
 });

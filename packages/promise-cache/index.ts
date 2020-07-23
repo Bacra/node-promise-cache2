@@ -16,12 +16,17 @@ export = function genPromiseCache(
         const key = cacheKey ? cacheKey.apply(this, args) : args[0];
         const realCache:CacheMap = isCacheFunc ? (cache as CacheMapFunc).call(this) : cache;
 
-        const promise = Promise.resolve(handler.apply(this, args));
-        realCache.set(key, promise);
+        let promise = realCache.get(key);
+        if (!promise) {
+            promise = Promise.resolve(handler.apply(this, args));
+            realCache.set(key, promise);
 
-        return promise.catch(err => {
-            realCache.delete(key);
-            throw err;
-        });
+            return promise.catch(err => {
+                realCache.delete(key);
+                throw err;
+            });
+        } else {
+            return promise;
+        }
     };
 }
