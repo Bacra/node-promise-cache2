@@ -1,4 +1,4 @@
-type ThisParameterType<T extends (this: unknown, ...args: any[]) => any> =
+type ThisParameterType<T extends (...args: any[]) => any> =
   T extends (this: infer U, ...args: any[]) => any ? U : unknown;
 
 export function promiseCache<
