@@ -2,22 +2,25 @@
   "name": "promise-cache2",
   "version": "1.0.1",
   "description": "promise cache",
-  "main": "index",
+  "main": "dist/index",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "test": "mocha test/test_*"
+    "test": "mocha test/test_*",
+    "build": "tsc",
+    "watch": "tsc --watch"
   },
   "devDependencies": {
     "expect.js": "^0.3.1",
-    "mocha": "^8.0.1"
+    "mocha": "^8.0.1",
+    "typescript": "^4.9.4"
   },
   "repository": {
     "type": "git",
     "url": "git@github.com:Bacra/node-promise-cache2.git"
   },
   "keywords": [
-    "i18n",
-    "translate",
-    "ast"
+    "promise",
+    "cache"
   ],
   "author": "Bacra Woo<bacra.woo@gmail.com>",
   "license": "MIT",
