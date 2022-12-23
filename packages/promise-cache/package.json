@@ -1,6 +1,6 @@
 {
   "name": "promise-cache2",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "promise cache",
   "main": "dist/index",
   "types": "dist/index.d.ts",
