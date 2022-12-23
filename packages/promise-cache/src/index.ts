@@ -1,10 +1,13 @@
+type ThisParameterType<T extends (this: unknown, ...args: any[]) => any> =
+  T extends (this: infer U, ...args: any[]) => any ? U : unknown;
+
 export function promiseCache<
   Args extends any[],
   Handler extends (...args: Args) => Promise<any>,
   HandlerRet extends ReturnType<Handler>,
   CacheMap extends Map<any, HandlerRet>,
-  CacheMapFunc extends (...args: Args) => CacheMap,
-  CacheKeyFunc extends (...args: Args) => any,
+  CacheMapFunc extends (this: ThisParameterType<Handler>, ...args: Args) => CacheMap,
+  CacheKeyFunc extends (this: ThisParameterType<Handler>, ...args: Args) => any,
 >(
   handler: Handler,
   {
@@ -14,12 +17,12 @@ export function promiseCache<
     cache?: CacheMap | CacheMapFunc,
     cacheKey?: CacheKeyFunc,
   } = {}
-): (...args: Args) => HandlerRet {
+): (this: ThisParameterType<Handler>, ...args: Args) => HandlerRet {
   const isCacheFunc = typeof cache === 'function';
 
-  return function promiseCache(...args: Args): HandlerRet {
+  function promiseCache(...args: Args) {
     const key = cacheKey ? cacheKey.apply(this, args) : args[0];
-    const realCache: CacheMap = isCacheFunc ? (cache as CacheMapFunc).apply(this, args) : cache;
+    const realCache: CacheMap = isCacheFunc ? cache.apply(this, args) : cache;
 
     let promise = realCache.get(key);
 
@@ -36,4 +39,21 @@ export function promiseCache<
       return promise;
     }
   };
+
+  return promiseCache;
+  // return promiseCache as NewHandler;
 }
+
+
+// const list = {
+//   cache: new Map(),
+//   handler: null,
+// };
+
+// list.handler = promiseCache(async function (this: typeof list, key: string) {
+//   return key;
+// }, {
+//   cache: function() { return this.cache }
+// });
+
+// list.handler('1234');
