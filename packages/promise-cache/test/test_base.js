@@ -40,7 +40,7 @@ describe('#base', () => {
 
   it('#runtimes', async() => {
     let runTimes = 0;
-    const handler = promiseCache(() => {
+    const handler = promiseCache(async () => {
       return ++runTimes;
     });
 

@@ -5,7 +5,7 @@ export function promiseCache<
   Args extends any[],
   Handler extends (...args: Args) => Promise<any>,
   HandlerRet extends ReturnType<Handler>,
-  CacheMap extends Map<any, HandlerRet | Promise<Awaited<HandlerRet>>>,
+  CacheMap extends Map<any, HandlerRet>,
   CacheMapFunc extends (this: ThisParameterType<Handler>, ...args: Args) => CacheMap,
   CacheKeyFunc extends (this: ThisParameterType<Handler>, ...args: Args) => any,
 >(
@@ -17,7 +17,7 @@ export function promiseCache<
     cache?: CacheMap | CacheMapFunc,
     cacheKey?: CacheKeyFunc,
   } = {}
-): (this: ThisParameterType<Handler>, ...args: Args) => HandlerRet | Promise<Awaited<HandlerRet>> {
+): (this: ThisParameterType<Handler>, ...args: Args) => HandlerRet {
   const isCacheFunc = typeof cache === 'function';
 
   function promiseCache(...args: Args) {
@@ -27,20 +27,16 @@ export function promiseCache<
     let promise = realCache.get(key);
 
     if (!promise) {
-      promise = Promise.resolve(handler.apply(this, args));
+      promise = handler.apply(this, args);
       realCache.set(key, promise);
 
-      return promise.catch(err => {
-        realCache.delete(key);
-        throw err;
-      });
-    } else {
-      return promise;
+      promise.catch(() => realCache.delete(key));
     }
+
+    return promise;
   };
 
   return promiseCache;
-  // return promiseCache as NewHandler;
 }
 
 
