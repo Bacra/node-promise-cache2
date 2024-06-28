@@ -49,10 +49,12 @@ export function promiseCache<
 //   handler: null,
 // };
 
-// list.handler = promiseCache(async function (this: typeof list, key: string) {
+// const handler = promiseCache(async function (this: typeof list, key: string) {
 //   return key;
 // }, {
 //   cache: function() { return this.cache }
 // });
 
-// list.handler('1234');
+// const result1 = handler.call(list, '4567');
+// list.handler = handler;
+// const result2 = list.handler('1234');
