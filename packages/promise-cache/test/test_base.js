@@ -2,40 +2,85 @@ const { promiseCache } = require('../');
 const expect = require('expect.js');
 
 describe('#base', () => {
-  it('#handler', async () => {
-    const map = new Map();
-    const handler = promiseCache(() => {
-      return new Promise(resolve => setTimeout(() => resolve('res'), 10));
-    }, {
-      cache: map,
-      cacheKey(key) {
-        expect(key).to.be('123');
-        return key;
-      }
-    });
-
-    expect(await handler('123')).to.be('res');
-    expect(map.get('123')).to.an(Promise);
-  });
-
-  it('#proto', async() => {
-    const obj = {
-      cache: new Map(),
-      handler: promiseCache(() => {
-        return new Promise(resolve => setTimeout(() => resolve('res'), 10));
+  describe('#cache type', () => {
+    it('#map', async () => {
+      const map = new Map();
+      const handler = promiseCache(() => {
+        return new Promise(resolve => setTimeout(() => resolve(Math.random()), 10));
       }, {
-        cache() {
-          return this.cache;
-        },
+        cache: map,
         cacheKey(key) {
           expect(key).to.be('123');
           return key;
         }
-      }),
-    };
+      });
 
-    expect(await obj.handler('123')).to.be('res');
-    expect(obj.cache.get('123')).to.an(Promise);
+      expect(await handler('123')).to.be(await handler('123'));
+      expect(await map.get('123')).to.be(await handler('123'));
+    });
+
+    it('#handler', async() => {
+      const obj = {
+        cache: new Map(),
+        handler: promiseCache(() => {
+          return new Promise(resolve => setTimeout(() => resolve(Math.random()), 10));
+        }, {
+          cache() {
+            return this.cache;
+          },
+          cacheKey(key) {
+            expect(key).to.be('123');
+            return key;
+          }
+        }),
+      };
+
+      expect(await obj.handler('123')).to.be(await obj.handler('123'));
+      expect(await obj.cache.get('123')).to.be(await obj.handler('123'));
+    });
+
+    it('#undefined', async() => {
+      const obj = {
+        handler: promiseCache(() => {
+          return new Promise(resolve => setTimeout(() => resolve(Math.random()), 10));
+        }, {
+          cache: 'proto',
+          cacheKey(key) {
+            expect(key).to.be('123');
+            return key;
+          }
+        }),
+      };
+
+      expect(await obj.handler('123')).to.be(await obj.handler('123'));
+    });
+
+    it('#proto', async() => {
+      let random;
+      const handler = promiseCache(() => {
+        return new Promise(resolve => setTimeout(() => {
+          const random2 = Math.random();
+          if (!random) random = random2;
+          resolve(random2);
+        }, 10));
+      }, {
+        cache: 'proto',
+        cacheKey(key) {
+          expect(key).to.be('123');
+          return key;
+        }
+      });
+
+      const obj1 = { handler };
+
+      expect(await obj1.handler('123')).to.be(random);
+      expect(await obj1.handler('123')).to.be(random);
+
+      const obj2 = { handler };
+      const ret2 = await obj2.handler('123');
+      expect(ret2).to.not.be(random);
+      expect(await obj2.handler('123')).to.be(ret2);
+    });
   });
 
   it('#runtimes', async() => {

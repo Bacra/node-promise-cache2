@@ -1,6 +1,11 @@
 type ThisParameterType<T extends (...args: any[]) => any> =
   T extends (this: infer U, ...args: any[]) => any ? U : unknown;
 
+function getGlobal() {
+  return this;
+}
+
+
 export function promiseCache<
   Handler extends (...args: any[]) => Promise<any>,
   HandlerRet extends ReturnType<Handler>,
@@ -13,18 +18,39 @@ export function promiseCache<
 >(
   handler: Handler,
   {
-    cache = new Map() as CacheMap,
+    cache,
     cacheKey,
   }: {
-    cache?: CacheMap | CacheMapFunc,
+    cache?: CacheMap | CacheMapFunc | 'proto',
     cacheKey?: CacheKeyFunc,
   } = {}
 ): (this: HanlderThis, ...args: HandlerArgs) => HandlerRet {
-  const isCacheFunc = typeof cache === 'function';
+  let cacheFunc: CacheMapFunc | (() => CacheMap);
+  if (cache === 'proto') {
+    const protoMap: WeakMap<any, CacheMap> = new WeakMap();
+    cacheFunc = function() {
+      if (this === getGlobal()) throw new Error('Miss Global By proto cache');
+
+      let map = protoMap.get(this);
+      if (!map) {
+        map = <CacheMap>new Map();
+        protoMap.set(this, map);
+      }
+
+      return map;
+    };
+  } else if (typeof cache === 'function') {
+    cacheFunc = cache;
+  } else if (!cache) {
+    const newMap = <CacheMap>new Map();
+    cacheFunc = () => newMap;
+  } else {
+    cacheFunc = () => cache;
+  }
 
   function promiseCache(...args: HandlerArgs) {
     const key = cacheKey ? cacheKey.apply(this, args) : args[0];
-    const realCache: CacheMap = isCacheFunc ? cache.apply(this, args) : cache;
+    const realCache: CacheMap = cacheFunc.apply(this, args);
 
     let promise = realCache.get(key);
 
