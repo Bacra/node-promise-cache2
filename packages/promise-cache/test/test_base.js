@@ -56,13 +56,8 @@ describe('#base', () => {
     });
 
     it('#proto', async() => {
-      let random;
       const handler = promiseCache(() => {
-        return new Promise(resolve => setTimeout(() => {
-          const random2 = Math.random();
-          if (!random) random = random2;
-          resolve(random2);
-        }, 10));
+        return new Promise(resolve => setTimeout(() => resolve(Math.random()), 10));
       }, {
         cache: 'proto',
         cacheKey(key) {
@@ -72,13 +67,12 @@ describe('#base', () => {
       });
 
       const obj1 = { handler };
-
-      expect(await obj1.handler('123')).to.be(random);
-      expect(await obj1.handler('123')).to.be(random);
+      const ret1 = await obj1.handler('123');
+      expect(await obj1.handler('123')).to.be(ret1);
 
       const obj2 = { handler };
       const ret2 = await obj2.handler('123');
-      expect(ret2).to.not.be(random);
+      expect(ret2).to.not.be(ret1);
       expect(await obj2.handler('123')).to.be(ret2);
     });
   });
