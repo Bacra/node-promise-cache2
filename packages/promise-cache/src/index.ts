@@ -5,6 +5,12 @@ function getGlobal() {
   return this;
 }
 
+type CMap<K,V> = {
+  get(key: K): V | undefined,
+  set(key: K, val: V): any,
+  delete(key: K): any,
+};
+
 
 export function promiseCache<
   Handler extends (...args: any[]) => Promise<any>,
@@ -13,18 +19,16 @@ export function promiseCache<
   HanlderThis extends ThisParameterType<Handler>,
 
   CacheKeyFunc extends (this: HanlderThis, ...args: HandlerArgs) => any,
-  CacheMap extends Map<ReturnType<CacheKeyFunc>, HandlerRet>,
+  CacheMap extends CMap<ReturnType<CacheKeyFunc>, HandlerRet>,
   CacheMapFunc extends (this: HanlderThis, ...args: HandlerArgs) => CacheMap,
 >(
   handler: Handler,
   {
     cache,
     cacheKey,
-    onSetCache,
   }: {
     cache?: CacheMap | CacheMapFunc | 'proto',
     cacheKey?: CacheKeyFunc,
-    onSetCache?: (this: HanlderThis, key: string, map: CacheMap) => void,
   } = {}
 ): (this: HanlderThis, ...args: HandlerArgs) => HandlerRet {
   let cacheFunc: CacheMapFunc | (() => CacheMap);
@@ -35,7 +39,7 @@ export function promiseCache<
 
       let map = protoMap.get(this);
       if (!map) {
-        map = <CacheMap>new Map();
+        map = new Map() as CMap<any, any> as CacheMap;
         protoMap.set(this, map);
       }
 
@@ -44,7 +48,7 @@ export function promiseCache<
   } else if (typeof cache === 'function') {
     cacheFunc = cache;
   } else if (!cache) {
-    const newMap = <CacheMap>new Map();
+    const newMap = new Map() as CMap<any, any> as CacheMap;
     cacheFunc = () => newMap;
   } else {
     cacheFunc = () => cache;
@@ -59,7 +63,6 @@ export function promiseCache<
     if (!promise) {
       promise = handler.apply(this, args);
       realCache.set(key, promise);
-      if (onSetCache) onSetCache.call(this, key, realCache);
 
       promise.catch(() => realCache.delete(key));
     }
@@ -85,3 +88,10 @@ export function promiseCache<
 // const result1 = handler.call(list, '4567');
 // list.handler = handler;
 // const result2 = list.handler('1234');
+
+
+// promiseCache(async () => {}, {
+//   cache: new Map(),
+// });
+
+// const globalMap: CMap<any, any> = new Map();
