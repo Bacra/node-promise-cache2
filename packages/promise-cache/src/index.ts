@@ -20,9 +20,11 @@ export function promiseCache<
   {
     cache,
     cacheKey,
+    onSetCache,
   }: {
     cache?: CacheMap | CacheMapFunc | 'proto',
     cacheKey?: CacheKeyFunc,
+    onSetCache?: (this: HanlderThis, key: string, map: CacheMap) => void,
   } = {}
 ): (this: HanlderThis, ...args: HandlerArgs) => HandlerRet {
   let cacheFunc: CacheMapFunc | (() => CacheMap);
@@ -57,6 +59,7 @@ export function promiseCache<
     if (!promise) {
       promise = handler.apply(this, args);
       realCache.set(key, promise);
+      if (onSetCache) onSetCache.call(this, key, realCache);
 
       promise.catch(() => realCache.delete(key));
     }
